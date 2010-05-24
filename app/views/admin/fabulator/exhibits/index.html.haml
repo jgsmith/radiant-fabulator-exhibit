@@ -1,0 +1,38 @@
+- @page_title = 'Exhibit Databases - ' + default_page_title
+
+.outset
+  - render_region :top
+  %table#exhibits.index
+    %thead
+      %tr
+        - render_region :thead do |thead|
+          - thead.title_header do
+            %th.filter Exhibit Database
+          - thead.size_header do
+            %th.size Items
+          - thead.modify_header do
+            %th.modify Modify
+    %tbody
+      - if @fabulator_exhibits.any?
+        - @fabulator_exhibits.each do |exhibit|
+          %tr.node.level_1
+            - render_region :tbody do |tbody|
+              - tbody.title_cell do
+                %td.snippet
+                  = image('snippet', :alt => '')
+                  %span= link_to exhibit.name, edit_admin_fabulator_exhibit_url(exhibit)
+              - tbody.size_cell do
+                %td.size
+                  %span= exhibit.items_count
+              - tbody.modify_cell do
+                %td.remove
+                  = link_to image('remove', :alt => 'Remove Exhibit Database'), remove_admin_fabulator_exhibit_url(exhibit)
+      - else
+        %tr
+          %td.note{:colspan => admin.fabulator_exhibit.index.tbody.length} No Exhibit Databases
+
+- render_region :bottom do |bottom|
+  - bottom.new_button do
+    #actions
+      %ul
+        %li= link_to "New Exhibit Database", { :controller => 'admin/fabulator/exhibits', :action => 'new' }
