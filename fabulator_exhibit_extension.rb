@@ -13,6 +13,9 @@ class FabulatorExhibitExtension < Radiant::Extension
         fab.resources :exhibits
       end
     end
+    map.namespace 'api' do |api|
+      api.resources :exhibits
+    end
   end
 
   def activate
