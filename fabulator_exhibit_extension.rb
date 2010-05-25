@@ -35,7 +35,12 @@ class FabulatorExhibitExtension < Radiant::Extension
         if db.nil?
           return { :items => [], :types => {}, :properties => {} }
         else
-          return (JSON.parse(db.data) rescue { :items => [], :types => {}, :properties => {} })
+          data = (JSON.parse(db.data) rescue { :items => [], :types => {}, :properties => {} })
+          ret = { :items => { }, :types => data[:types], :properties => data[:properties] }
+          data[:items].each do |i| 
+            ret[:items][i[:id]] = i
+          end
+          return ret
         end
       end
 
@@ -44,8 +49,9 @@ class FabulatorExhibitExtension < Radiant::Extension
         if db.nil?
           raise "The Exhibit database #{nom} does not exist."
         end
-        db.data = data.to_json
-        db.items_count = data[:items].size
+        to_save = { :items => data[:items].values, :properties => data[:properties], :types => data[:types] }
+        db.data = to_save.to_json
+        db.items_count = to_save[:items].size
         db.save
       end
     end
