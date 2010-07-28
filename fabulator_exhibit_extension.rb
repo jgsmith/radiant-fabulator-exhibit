@@ -37,7 +37,9 @@ class FabulatorExhibitExtension < Radiant::Extension
           return { :items => [], :types => {}, :properties => {} }
         else
           data = (JSON.parse(db.data) rescue { 'items' => [], 'types' => {}, 'properties' => {} })
-          ret = { :items => { }, :types => data[:types], :properties => data[:properties] }
+          ret = { :items => { }, :types => data['types'], :properties => data['properties'] }
+          ret[:properties] = { } if ret[:properties].nil?
+          ret[:types] = { } if ret[:types].nil?
           data['items'].each do |i| 
             ret[:items][i['id']] = i
           end
