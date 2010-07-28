@@ -1,4 +1,5 @@
 require 'fabulator/exhibit'
+require 'json'
 
 class FabulatorExhibitExtension < Radiant::Extension
   version "1.0"
@@ -35,10 +36,10 @@ class FabulatorExhibitExtension < Radiant::Extension
         if db.nil?
           return { :items => [], :types => {}, :properties => {} }
         else
-          data = (JSON.parse(db.data) rescue { :items => [], :types => {}, :properties => {} })
+          data = (JSON.parse(db.data) rescue { 'items' => [], 'types' => {}, 'properties' => {} })
           ret = { :items => { }, :types => data[:types], :properties => data[:properties] }
-          data[:items].each do |i| 
-            ret[:items][i[:id]] = i
+          data['items'].each do |i| 
+            ret[:items][i['id']] = i
           end
           return ret
         end
