@@ -8,21 +8,17 @@ class FabulatorExhibitExtension < Radiant::Extension
 
   class MissingRequirement < StandardError; end
 
-  define_routes do |map|
-    map.namespace 'admin' do |admin|
-      admin.namespace 'fabulator', :member => { :remove => :get } do |fab|
-        fab.resources :exhibits
-      end
-    end
-    map.namespace 'api' do |api|
-      api.resources :exhibits
-    end
+  extension_config do |config|
+    config.gem 'radiant-fabulator-extension'
+    config.gem 'fabulator-exhibit'
   end
 
   def activate
-    raise FabulatorExhibitExtension::MissingRequirement.new('FabulatorExtension must be installed and loaded first.') unless defined?(FabulatorExtension)
+    #raise FabulatorExhibitExtension::MissingRequirement.new('FabulatorExtension must be installed and loaded first.') unless defined?(FabulatorExtension)
 
-    admin.nav[:fabulator] << admin.nav_item(:exhibits, "Exhibit Databases", "/admin/fabulator/exhibits")
+    tab 'Fabulator' do
+      add_item("Exhibit Databases", "/admin/fabulator/exhibits")
+    end
 
     Radiant::AdminUI.class_eval do
       attr_accessor :exhibits
