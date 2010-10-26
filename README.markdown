@@ -16,6 +16,9 @@ libraries:
 
 == LICENSE:
 
+N.B.: The JavaScript libraries in this distribution are under a separate
+license.  See the JavaScript files for more information.
+
 Copyright (c) 2009-2010 Texas A&M University
 
 Permission is hereby granted, free of charge, to any person obtaining

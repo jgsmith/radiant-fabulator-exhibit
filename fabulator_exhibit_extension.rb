@@ -2,7 +2,7 @@ require 'fabulator/exhibit'
 require 'json'
 
 class FabulatorExhibitExtension < Radiant::Extension
-  version "1.0"
+  version "0.0.2"
   description "Exhibit extension to the Fabulator extension"
   url "http://github.com/jgsmith/radiant-fabulator-exhibit"
 
@@ -16,6 +16,13 @@ class FabulatorExhibitExtension < Radiant::Extension
   def activate
     #raise FabulatorExhibitExtension::MissingRequirement.new('FabulatorExtension must be installed and loaded first.') unless defined?(FabulatorExtension)
 
+    %w{exhibit.js data.js  expressions.js views.js facets.js}.each do |s|
+      FabulatorExtension.scripts << "fabulator/exhibit/#{s}"
+    end
+    #FabulatorExtension.scripts << 'fabulator/exhibit/exhibit.js'
+    #FabulatorExtension.scripts << 'fabulator/exhibit/exhibit-expressions.js'
+    FabulatorExtension.css << 'fabulator/exhibit/exhibit.css'
+
     tab 'Fabulator' do
       add_item("Exhibit Databases", "/admin/fabulator/exhibits")
     end
@@ -26,7 +33,9 @@ class FabulatorExhibitExtension < Radiant::Extension
     end
     admin.exhibits = load_default_fabulator_exhibit_regions
 
-    Fabulator::Exhibit::Actions::Lib.class_eval do
+  ## TODO: better database so we can have multiple applications accessing
+  ##       the same database at the same time
+    Fabulator::Exhibit::Lib.class_eval do
       def self.fetch_database(nom)
         db = FabulatorExhibit.find(:first, :conditions => [ 'name = ?', nom ])
         if db.nil?

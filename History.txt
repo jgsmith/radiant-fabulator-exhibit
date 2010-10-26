@@ -1,3 +1,12 @@
+=== 0.0.2 2010-10-26
+* 1 major enhancement:
+  * Provides javascript/css for implementing Exhibit views in HTML
+
+* 3 minor enhancement:
+  * Explicit dependance on UUID gem
+  * Requires fabulator-exhibit 0.0.4
+  * Requires Radiant fabulator extension 0.0.6
+
 === 0.0.1 2010-08-10
 
 * 1 major enhancement:
