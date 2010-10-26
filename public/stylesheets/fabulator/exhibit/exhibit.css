@@ -1,0 +1,109 @@
+.fabulator-exhibit {
+}
+
+.fabulator-exhibit > .header {
+  margin-bottom: 2px;
+  text-align: center;
+  background-color: #f0f0f0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.fabulator-exhibit > .header .title {
+  font-weight: bold;
+  font-size: 120%;
+}
+
+.fabulator-exhibit > .header .counter {
+  padding-left: 1em;
+  float: left;
+  padding-right: 1em;
+}
+
+.fabulator-exhibit > .header .ui-icon {
+  float: right;
+  padding-bottom: 2px;
+}
+
+.fabulator-exhibit .views {
+  padding: 2px;
+}
+
+.fabulator-exhibit .tile-view table {
+  float: left;
+  width: 49%;
+}
+
+.clear {
+  clear: both;
+}
+
+.facets-overlay {
+  display: none;
+
+  z-index: 10000;
+
+  background: rgb(255,255,253);
+  background: rgba(255,255,253, 0.95);
+
+  width: 675px;
+  min-height: 200px;
+  border: 1px solid #666;
+  padding: 3px;
+}
+
+.facets-overlay a.close {
+  float: right;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.exhibit-facet {
+  margin-top: 5px;
+}
+
+.exhibit-facet + .exhibit-facet {
+  clear: left;
+}
+
+.exhibit-facet .header {
+  border-bottom: 1px solid #999999;
+  padding-left: 0.5em;
+}
+
+.exhibit-facet .body input {
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+.exhibit-facet .body {
+  margin-bottom: 5px;
+}
+
+.exhibit-facet-value {
+  float: left;
+  margin-right: 0.25em;
+  margin-left: 0.25em;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-right: 2px;
+  border: 1px solid #cccccc;
+  background-color: #eeeeee;
+  padding-left: 14px;
+}
+
+.exhibit-facet-not-selected {
+  background-color: #ffeeee;
+}
+
+.exhibit-facet-selected {
+  background-color: #eeffee;
+  padding-left: 2px;
+}
+
+.exhibit-facet-value .selected {
+  float: left;
+  width: 12px;
+  display: block;
+  text-align: center;
+}
