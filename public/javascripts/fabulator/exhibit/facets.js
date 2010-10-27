@@ -402,7 +402,7 @@ Fabulator.namespace('Exhibit');
         facetValueResult = path.walkForward(items, "item", dataView.dataSource);
         valueType = facetValueResult.valueType;
 
-        if( facetValueResult.size > 0 ) {
+        if( facetValueResult.size() > 0 || options.facet.showMissing ) {
           facetValueResult.forEachValue(function(facetValue) {
             var itemSubcollection;
             if( filter.contains(facetValue) ) {
@@ -427,7 +427,7 @@ Fabulator.namespace('Exhibit');
         facetValueResult = path.walkForward(items, "item", dataView.dataSource);
         valueType = facetValueResult.valueType || "text";
 
-        if( facetValueResult.size() > 0 ) {
+        if( facetValueResult.size() > 0 || options.facet.showMissing ) {
           facetValueResult.forEachValue(function(facetValue) {
             var itemSubcollection = path.evaluateBackward(facetValue, valueType, items, dataView.dataSource);
             entries.push({ value: facetValue, count: itemSubcollection.size(), selectionLabel: facetValue, selected: valueSet.contains(facetValue) });
