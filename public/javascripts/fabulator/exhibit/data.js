@@ -107,7 +107,6 @@ Fabulator.namespace('Exhibit');
     var createDOMFromTemplate = function(rootID, templateNode, result, parentElmt) {
       var node, elmt, tag, attribute, value, v, n, i, items;
 
-console.log("create from: ", templateNode);
       if(templateNode == null) {
         return null;
       }
@@ -122,7 +121,6 @@ console.log("create from: ", templateNode);
         elmt = null;
 
         if( templateNode.condition != null ) {
-          console.log("We have a condition: ", templateNode.condition);
           if( templateNode.condition.test == "if-exists" ) {
             if( !templateNode.condition.expression.testExists(
                    { "value": rootID },
