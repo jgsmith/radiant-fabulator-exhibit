@@ -402,7 +402,7 @@ Fabulator.namespace('Exhibit');
         facetValueResult = path.walkForward(items, "item", dataView.dataSource);
         valueType = facetValueResult.valueType;
 
-        if( facetValueResult.size() > 0 || options.facet.showMissing ) {
+        if( facetValueResult.size() > 0 ) {
           facetValueResult.forEachValue(function(facetValue) {
             var itemSubcollection;
             if( filter.contains(facetValue) ) {
@@ -424,13 +424,20 @@ Fabulator.namespace('Exhibit');
         entries = [ ];
 
         path = options.facet.expression;
-        facetValueResult = path.walkForward(items, "item", dataView.dataSource);
+        facetValueResult = path.walkForward(dataView.dataSource.items(), "item", dataView.dataSource);
         valueType = facetValueResult.valueType || "text";
 
-        if( facetValueResult.size() > 0 || options.facet.showMissing ) {
+
+        if( facetValueResult.size() > 0 ) {
           facetValueResult.forEachValue(function(facetValue) {
-            var itemSubcollection = path.evaluateBackward(facetValue, valueType, items, dataView.dataSource);
-            entries.push({ value: facetValue, count: itemSubcollection.size(), selectionLabel: facetValue, selected: valueSet.contains(facetValue) });
+            var itemSubcollection = path.evaluateBackward(facetValue, valueType, items, dataView.dataSource),
+                count = 0;
+
+            $(items).each(function(idx, id) {
+              count += (itemSubcollection.contains(id) ? 1 : 0);
+            });
+ 
+            entries.push({ value: facetValue, count: count, selectionLabel: facetValue, selected: valueSet.contains(facetValue) });
           });
         }
 

@@ -1,3 +1,8 @@
+=== 0.0.3
+* 2 major enhancement
+  * Supports conditional parts in lenses (if-exists)
+  * Shows options in list facet that have no current matches (configurable)
+
 === 0.0.2 2010-10-26
 * 1 major enhancement:
   * Provides javascript/css for implementing Exhibit views in HTML
