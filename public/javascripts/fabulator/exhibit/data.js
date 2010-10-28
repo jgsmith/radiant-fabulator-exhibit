@@ -107,6 +107,7 @@ Fabulator.namespace('Exhibit');
     var createDOMFromTemplate = function(rootID, templateNode, result, parentElmt) {
       var node, elmt, tag, attribute, value, v, n, i, items;
 
+console.log("create from: ", templateNode);
       if(templateNode == null) {
         return null;
       }
@@ -119,6 +120,21 @@ Fabulator.namespace('Exhibit');
       }
       else {
         elmt = null;
+
+        if( templateNode.condition != null ) {
+          console.log("We have a condition: ", templateNode.condition);
+          if( templateNode.condition.test == "if-exists" ) {
+            if( !templateNode.condition.expression.testExists(
+                   { "value": rootID },
+                   { "value": "item" },
+                   "value",
+                   that.dataSource
+                )) {
+              return;
+            }
+          }
+        }
+
         if( "tag" in templateNode ) {
           tag = templateNode.tag;
           if( parentElmt != null ) {
@@ -151,8 +167,10 @@ Fabulator.namespace('Exhibit');
           if( attribute == "field" ) {
             result[value] = elmt;
           }
-          else if( attribute == "className" ) {
-            elmt.className = value;
+          else if( attribute == "class" ) {
+            $(value.split(/\s+/)).each(function(idx, n) {
+              $(elmt).addClass(n);
+            });
           }
           else if( attribute == "id" ) {
             elmt.id = id;
@@ -163,11 +181,23 @@ Fabulator.namespace('Exhibit');
           else if( attribute == "type" && elm.tagName == "input") {
             // do nothing
           }
-          else if( attribute == "style" ) {
+          else if( attribute == "styles" ) {
             for( n in value ) {
               v = value[n];
               elmt.style[n] = v;
             }
+          }
+          else if( attribute == "attributes" ) {
+            $(value).each(function(idx, a) {
+              if( a.name == "class" ) {
+                $(a.value.split(/\s+/)).each(function(idx, v) {
+                  $(elmt).addClass(v);
+                });
+              }
+              else {
+                $(elmt).attr(a.name, a.value);
+              }
+            });
           }
           else if( attribute == "content" ) {
             if( value != null ) {
@@ -206,8 +236,8 @@ Fabulator.namespace('Exhibit');
               }
             }
           }
-          else if( attribute != "tag" && attribute != "elmt" ) {
-            elmt.setAttribute(attribute, value);
+          else if( attribute != "tag" && attribute != "elmt" && attribute != "condition" && typeof(value) == "string" ) {
+            $(elmt).attr(attribute, value);
           }
         }
         return elmt;

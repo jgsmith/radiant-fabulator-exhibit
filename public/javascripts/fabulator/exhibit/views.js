@@ -250,6 +250,9 @@
     return fragments;
   };
 
+  var processStyle = function(that, value) {
+  };
+
   var processors = { };
 
   processors.TemplateNode = function(node) {
@@ -352,7 +355,25 @@
         else {
         }
       }
-      else if( name == "style") {
+      else {
+        if( name == "style") {
+          processStyle(that, value);
+        } else if( name != "id" ) {
+          if( name == "cellspacing" ) {
+            name = "cellSpacing";
+          }
+          else if( name == "cellpadding" ) {
+            name = "cellPadding";
+          }
+          else if( name == "bgcolor" ) {
+            name = "bgColor";
+          }
+
+          that.attributes.push({
+            name: name,
+            value: value
+          });
+        }
       }
     }
 
