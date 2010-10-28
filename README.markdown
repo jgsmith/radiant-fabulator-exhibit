@@ -14,6 +14,16 @@ libraries:
 
 * ruby-fabulator-exhibit gem
 
+After installation, you will need to add the following to your site's 
+environment.rb:
+
+  config.gem 'radiant-fabulator_exhibit-extension'
+
+and the following to your site's Rakefile:
+
+  require 'tasks/fabulator_exhibit_extension'
+
+
 == LICENSE:
 
 N.B.: The JavaScript libraries in this distribution are under a separate
