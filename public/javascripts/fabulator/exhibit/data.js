@@ -490,7 +490,7 @@ Fabulator.namespace('Exhibit');
         that.events.onAfterLoadingTypes.fire(that);
       }
       catch(e) {
-        console.log("loadTypes failed:", e);
+        Exhibit.debug("loadTypes failed:", e);
       }
     };
 
@@ -532,7 +532,7 @@ Fabulator.namespace('Exhibit');
         that.events.onAfterLoadingProperties.fire(that);
       }
       catch(e) {
-        console.log("loadProperties failed: ", e);
+        Exhibit.debug("loadProperties failed: ", e);
       }
     };
 
@@ -581,7 +581,7 @@ Fabulator.namespace('Exhibit');
         that.events.onAfterLoadingItems.fire(that);
       }
       catch(e) {
-        console.log("loadItems failed: ", e);
+        Exhibit.debug("loadItems failed: ", e);
       }
     };
 
@@ -589,14 +589,14 @@ Fabulator.namespace('Exhibit');
       var id, label, uri, type, isArray, p, i, n;
 
       if(!("label" in item) && !("id" in item)) {
-        console.log("Item entry has no label and no id: ", item);
+        Exhibit.debug("Item entry has no label and no id: ", item);
         return;
       }
 
       if(!("label" in item)) {
         id = item.id;
         if( !that.items.contains(id) ) {
-          console.log("Cannot add new item containing no label: ", item);
+          Exhibit.debug("Cannot add new item containing no label: ", item);
         }
       }
       else {

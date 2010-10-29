@@ -1,4 +1,4 @@
-=== 0.0.3
+=== 0.0.3 2010-10-28
 * 2 major enhancement
   * Supports conditional parts in lenses (if-exists)
   * Shows options in list facet that have no current matches (configurable)

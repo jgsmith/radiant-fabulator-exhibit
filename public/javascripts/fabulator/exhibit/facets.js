@@ -302,7 +302,7 @@ Fabulator.namespace('Exhibit');
           }
         }
         catch(e) {
-          console.log(e);
+          Exhibit.debug(e);
         }
       }
 
