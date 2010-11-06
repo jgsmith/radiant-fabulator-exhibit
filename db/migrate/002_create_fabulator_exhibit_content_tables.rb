@@ -27,30 +27,36 @@ class CreateFabulatorExhibitContentTables < ActiveRecord::Migration
     FabulatorExhibit.find(:all).each do |db|
       data = (JSON.parse(db.data) rescue { 'items' => [], 'types' => {}, 'properties' => {} })
       data['types'].each_pair do |k,t|
-        t_ob = FabulatorExhibitType.create({
-          :fabulator_exhibit_id => db.id,
-          :name => k,
-          :data => t.to_json
-        })
-        t_ob.save!
+        if !k.nil? && k != ""
+          t_ob = FabulatorExhibitType.create({
+            :fabulator_exhibit_id => db.id,
+            :name => k,
+            :data => t.to_json
+          })
+          t_ob.save!
+        end
       end
 
       data['properties'].each_pair do |k,p|
-        p_ob = FabulatorExhibitProperty.create({
-          :fabulator_exhibit_id => db.id,
-          :name => k,
-          :data => p.to_json
-        })
-        p_ob.save!
+        if !k.nil? && k != ""
+          p_ob = FabulatorExhibitProperty.create({
+            :fabulator_exhibit_id => db.id,
+            :name => k,
+            :data => p.to_json
+          })
+          p_ob.save!
+        end
       end
 
       data['items'].each do |i|
-        i_ob = FabulatorExhibitItem.create({
-          :fabulator_exhibit_id => db.id,
-          :uuid => i['id'],
-          :data => i.to_json
-        });
-        i_ob.save!
+        if !i['id'].nil? && i['id'] != ""
+          i_ob = FabulatorExhibitItem.create({
+            :fabulator_exhibit_id => db.id,
+            :uuid => i['id'],
+            :data => i.to_json
+          });
+          i_ob.save!
+        end
       end
     end
   end
