@@ -615,7 +615,7 @@ Fabulator.namespace('Exhibit');
     };
 
     that.loadItems = function(items, baseURI) {
-      var spo, ops, indexTriple, i, entry, n;
+      var spo, ops, indexTriple, i, entry, n, progress, percent, old_percent;
 
       var indexPut = function(index, x, y, z) {
         var hash = index[x],
@@ -642,6 +642,18 @@ Fabulator.namespace('Exhibit');
 
 
       that.events.onBeforeLoadingItems.fire(that);
+       $("<div id='progress-items-" + options.source + "'>" +
+         "<div class='flc-progress progress-pop-up exhibit-progress-pop-up'><h3>Loading " + items.length + " Item" + (items.length == 1 ? "" : "s") + "</h3>" +
+          "<div class='flc-progress-bar progress-bar'>" +
+            "<div class='flc-progress-indicator progress-indicator'></div>" +
+          "</div>" +
+          "<p class='flc-progress-label progress-label'>0% Complete</p>" +
+         "</div></div>").appendTo($("html > body"));
+
+      progress = fluid.progress("#progress-items-" + options.source);
+      progress.show();
+      old_percent = 0;
+
       try {
         baseURI = canonicalBaseURI(baseURI);
 
@@ -651,6 +663,11 @@ Fabulator.namespace('Exhibit');
         };
 
         for(i = 0, n = items.length; i < n; i++) {
+          percent = (i * 100 / n);
+          if( percent > old_percent ) {
+            old_percent = percent;
+            progress.update(percent, percent + "% Complete");
+          }
           entry = items[i];
           if( typeof(entry) == "object" ) {
             that.loadItem(entry, indexTriple, baseURI);
@@ -661,6 +678,8 @@ Fabulator.namespace('Exhibit');
       catch(e) {
         Exhibit.debug("loadItems failed: ", e);
       }
+      progress.update(100, "100% Complete");
+      progress.hide();
     };
 
     that.loadItem = function(item, indexFn, baseURI) {

@@ -2,7 +2,7 @@ require 'fabulator/exhibit'
 require 'json'
 
 class FabulatorExhibitExtension < Radiant::Extension
-  version "0.0.4"
+  version "0.0.5"
   description "Exhibit extension to the Fabulator extension"
   url "http://github.com/jgsmith/radiant-fabulator-exhibit"
 

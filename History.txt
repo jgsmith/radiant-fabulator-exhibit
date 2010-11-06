@@ -1,3 +1,7 @@
+=== 0.0.5 2010-11-06
+* 1 major enhancement
+  * Progress bar while loading items
+
 === 0.0.4 2010-11-06
 * 1 major enhancement
   * Exhbit databases are now more than just blobs of text.  Run the migration

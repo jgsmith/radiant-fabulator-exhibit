@@ -108,3 +108,9 @@
   display: block;
   text-align: center;
 }
+
+.exhibit-progress-pop-up {
+  position: absolute;
+  right: 40%;
+  top: 40%;
+}
