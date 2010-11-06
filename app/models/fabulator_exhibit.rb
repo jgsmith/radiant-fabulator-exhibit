@@ -9,10 +9,6 @@ class FabulatorExhibit < ActiveRecord::Base
   belongs_to :updated_by, :class_name => 'User'
   belongs_to :created_by, :class_name => 'User'
 
-  def data
-    self.database.to_json
-  end
-
   def database
     FabulatorExhibitExtension::Database.new(self)
   end

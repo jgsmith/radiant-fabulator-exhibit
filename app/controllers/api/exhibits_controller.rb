@@ -6,7 +6,7 @@ class Api::ExhibitsController < ApplicationController
   def show
     @exhibit = FabulatorExhibit.find(:first, :conditions => [ "name = ?", params[:id] ])
     respond_to do |format|
-      format.json { render :json => @exhibit.data }
+      format.json { render :json => @exhibit.database.to_json }
     end
   end
 end
