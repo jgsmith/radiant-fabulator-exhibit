@@ -38,7 +38,8 @@
         items = new Array(),
         item_id_to_pos = { },
         presentationStyle,
-        viewClass, viewClassObj, tab_html;
+        viewClass, viewClassObj, tab_html, 
+        container_id = $(container).attr('id');
 
     var calculatePositions = function() {
       /* we have glue between panels */
@@ -171,7 +172,7 @@
       tab_html = tab_html + "</ul>";
       $(tab_html).prependTo($(container));
 
-      $(container).tabs();
+      //$(container).tabs();
     }
     else if(presentationStyle == 'flat') {
     }
@@ -190,10 +191,9 @@
         viewClass, viewClassObj, tab_html;
   };
 
-  Exhibit.Presentations.Tile = function(container, options) {
-    var that = fluid.initView("Fabulator.Exhibit.Presentations.Tile", container, options),
-        lenses = new Array(),
-        l;
+  Exhibit.Presentations.initView = function(type, container, options) {
+    var that = fluid.initView("Fabulator.Exhibit.Presentations." + type, container, options),
+        lenses = new Array();
 
     options = that.options;
 
@@ -202,7 +202,7 @@
         lenses.push(Exhibit.Lens(el, options));
       }
     });
-
+        
     that.getLens = function(item) {
       for(i = 0, n = lenses.length; i < n; i++) {
         if(lenses[i].isForItem(item)) {
@@ -210,24 +210,94 @@
         }
       }
       return that.options.viewPanel.getLens(item);
+    } 
+
+    if( "settingSpec" in options ) {
+      that.options.settings = Exhibit.Util.collectSettingsFromDOM(container, options.settingSpec);
     }
+
+    if( "accessorSpec" in options ) {
+      that.options.accessors = that.options.accessors || {};
+      Exhibit.Util.createAccessorsFromDOM(container, options.accessorSpec, that.options.accessors);
+    }
+
+    return that;
+  };
+
+  Exhibit.Presentations.Tile = function(container, options) {
+    var that = Exhibit.Presentations.initView("Tile", container, options),
+        body_container,
+        my_id = $(container).attr('id');
+
+    options = that.options;
+
+
+
+    $(container).empty();
+
+/*
+    $("<ul class='flt-pager-top' id='" + my_id + "-pages-top'>" +
+      "<li class='flc-pager-previous'><a href='#'>&lt; previous</a></li>" +
+      "<li class='flc-pager-next'><a href='#'>next &gt;</a></li>" +
+      "</ul>").appendTo($(container));
+*/
+    $("<div id='" + my_id + "-body'></div>").appendTo($(container));
+    body_container = $('#' + my_id + '-body');
+/*
+    $("<ul class='flt-pager-bottom' id='" + my_id + "-pages-bottom'>" +
+      "<li class='flc-pager-previous'><a href='#'>&lt; previous</a></li>" +
+      "<li class='flc-pager-next'><a href='#'>next &gt;</a></li>" +
+      "</ul>").appendTo($(container));
+*/
 
     that.eventModelChange = function(model) {
       var template, cutpoints, tree, lens, i, n, item;
 
-      $(container).empty();
+      $(body_container).empty();
       $(model.items()).each(function(idx, id) {
         item = model.getItem(id);
         lens = that.getLens(item);
 
-        $(lens.render(model, id)).appendTo($(container));
+        $(lens.render(that, model, id)).appendTo($(body_container));
       });
 
-      $("<div class='clear'></div>").appendTo($(container));
+      $("<div class='clear'></div>").appendTo($(body_container));
+    };
+
+/*
+    var pagerModelChange = function(newModel, oldModel) {
+console.log("pagerModelChange", newModel, oldModel);
+    };
+
+    fluid.pager(container, {
+      listeners: {
+        onModelChange: pagerModelChange
+      },
+      bodyRenderer: {
+        type: "Fabulator.Exhibit.Presentations.Tile.selfRender",
+        options: {
+        }
+      }
+    });
+*/
+
+    return that;
+  };
+
+  Exhibit.Presentations.Tile.selfRender = function() {
+    /* console.log(arguments); */
+  };
+
+  Exhibit.Presentations.Map = function(container, options) {
+    var that = Exhibit.Presentations.initView("Map", container, options),
+
+    options = that.options;
+
+    that.eventModelChange = function(model) {
     };
 
     return that;
-  }
+  };
 
   var parseSubcontentAttribute = function(value) {
     var fragments = [ ],
@@ -307,6 +377,15 @@
         else if( name == "content" ) {
           that.content = expressionParser.parse(value);
           parseChildNodes = false;
+        }
+        else if( name == "separator" ) {
+          that.separator = value;
+        }
+        else if( name == "last-separator" ) {
+          that.last_separator = value;
+        }
+        else if( name == "pair-separator" ) {
+          that.pair_separator = value;
         }
         else if( name == "if-exists" ) {
           that.condition = {
@@ -397,7 +476,7 @@
     var that = { },
         template = { };
 
-    that.render = function(model, itemID) {
+    that.render = function(view, model, itemID) {
       var text, item = model.getItem(itemID);
 
       text = "<table><tr><td colspan='2'>" +
@@ -426,12 +505,12 @@
 
     template = processors.TemplateNode(container);
 
-    that.render = function(model, itemID) {
+    that.render = function(view, model, itemID) {
       var div = document.createElement("div"),
           old_div = template.elmt,
           result;
       template.elmt = div;
-      result = model.renderTemplate(itemID, template);
+      result = model.renderTemplate(view, itemID, template);
       template.elmt = old_div;
       return result.elmt;
     };
@@ -475,4 +554,95 @@
 })(jQuery, Fabulator.Exhibit);
 
 fluid.defaults("Fabulator.Exhibit.Presentations", {
+});
+
+fluid.defaults("Fabulator.Exhibit.Presentations.Map", {
+  settingSpec: {
+    "center":           { type: "float",    defaultValue: [20,0], dimensions: 2 },
+    "zoom":             { type: "float",    defaultValue: 2 },
+    "size":             { type: "text",     defaultValue: "small" },
+    "scaleControl":     { type: "boolean",  defaultValue: true },
+    "overviewControl":  { type: "boolean",  defaultValue: true },
+    "type":             { type: "enum",     defaultValue: "normal", choices: [ "normal", "hybrid", "satellite" ] },
+    "bubbleTip":        { type: "enum",     defaultValue: "top",    choices: [ "top", "bottom" ] },
+    "mapHeight":        { type: "int",      defaultValue: 400       },
+    "mapConstructor":   { type: "function", defaultValue: null      },
+    "color":            { type: "text",     defaultValue: "#FF9000" },
+    "colorCoder":       { type: "text",     defaultValue: null      },
+    "sizeCoder":        { type: "text",     defaultValue: null      },
+    "iconCoder":        { type: "text",     defaultValue: null      },
+    "selectCoordinator":  { type: "text",   defaultValue: null      },
+    "iconSize":         { type: "int",      defaultValue: 0         },
+    "iconFit":          { type: "text",     defaultValue: "smaller" },
+    "iconScale":        { type: "float",    defaultValue: 1         },
+    "iconOffsetX":      { type: "float",    defaultValue: 0         },
+    "iconOffsetY":      { type: "float",    defaultValue: 0         },
+    "shape":            { type: "text",     defaultValue: "circle"  },
+    "shapeWidth":       { type: "int",      defaultValue: 24        },
+    "shapeHeight":      { type: "int",      defaultValue: 24        },
+    "shapeAlpha":       { type: "float",    defaultValue: 0.7       },
+    "pin":              { type: "boolean",  defaultValue: true      },
+    "pinHeight":        { type: "int",      defaultValue: 6         },
+    "pinWidth":         { type: "int",      defaultValue: 6         },
+    "sizeLegendLabel":  { type: "text",     defaultValue: null      },
+    "colorLegendLabel": { type: "text",     defaultValue: null      },
+    "iconLegendLabel":  { type: "text",     defaultValue: null      },
+    "markerScale":      { type: "text",     defaultValue: null      },
+    "showHeader":       { type: "boolean",  defaultValue: true      },
+    "showSummary":      { type: "boolean",  defaultValue: true      },
+    "showFooter":       { type: "boolean",  defaultValue: true      }
+  },
+  accessorSpec: [
+    { accessorName:   "getProxy",
+      attributeName:  "proxy"
+    },
+    { accessorName: "getLatlng",
+      alternatives: [
+        { bindings: [
+            { attributeName:  "latlng",
+              types:          [ "float", "float" ],
+              bindingNames:   [ "lat", "lng" ]
+            },
+            { attributeName:  "maxAutoZoom",
+              type:           "float",
+              bindingName:    "maxAutoZoom",
+              optional:       true
+            }
+          ]
+        },
+        { bindings: [
+            { attributeName:  "lat",
+              type:           "float",
+              bindingName:    "lat"
+            },
+            { attributeName:  "lng",
+              type:           "float",
+              bindingName:    "lng"
+            },
+            { attributeName:  "maxAutoZoom",
+              type:           "float",
+              bindingName:    "maxAutoZoom",
+              optional:       true
+            }
+          ]
+        }
+      ]
+    },
+    { accessorName:   "getColorKey",
+      attributeName:  "colorKey",
+      type:           "text"
+    },
+    { accessorName:   "getSizeKey",
+      attributeName:  "sizeKey",
+      type:           "text"
+    },
+    { accessorName:   "getIconKey",
+      attributeName:  "iconKey",
+      type:           "text"
+    },
+    { accessorName:   "getIcon",
+      attributeName:  "icon",
+      type:           "url"
+    }
+  ]
 });

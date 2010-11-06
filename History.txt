@@ -1,3 +1,12 @@
+=== 0.0.4 2010-11-06
+* 1 major enhancement
+  * Exhbit databases are now more than just blobs of text.  Run the migration
+    to use the new schema
+* 1 minor enhancement
+  * Items with multiple values are now shown with ex:separator,
+    ex:last-separator, and ex:pair-separator available for inserting
+    HTML between values
+
 === 0.0.3 2010-10-28
 * 2 major enhancement
   * Supports conditional parts in lenses (if-exists)

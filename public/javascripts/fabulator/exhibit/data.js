@@ -104,7 +104,87 @@ Fabulator.namespace('Exhibit');
       return div.firstChild;
     };
 
-    var createDOMFromTemplate = function(rootID, templateNode, result, parentElmt) {
+    var itemList = function(view, parentElmt, templateNode, list) {
+      var separator = ", ",
+          last_separator = ", and ",
+          pair_separator = " and ",
+          values, value, lens,
+          valueType, lensElmt, lensRender,
+          i, n;
+
+      if( "separator" in templateNode ) {
+        separator = templateNode.separator;
+      }
+      if( "last_separator" in templateNode ) {
+        last_separator = templateNode.last_separator;
+      }
+      if( "pair_separator" in templateNode ) {
+        pair_separator = templateNode.pair_separator;
+      }
+
+      if(separator && separator.substr(0,1) != "<") {
+        separator = "<span>" + separator + "</span>";
+      }
+      if(last_separator && last_separator.substr(0,1) != "<") {
+        last_separator = "<span>" + last_separator + "</span>";
+      }
+      if(pair_separator && pair_separator.substr(0,1) != "<") {
+        pair_separator = "<span>" + pair_separator + "</span>";
+      }
+
+      valueType = list.valueType || "text";
+      values = list.values.items();
+
+      $(parentElmt).empty();
+
+        /* we want a popup that will show the lens for this item type */
+      for( i = 0, n = values.length; i < n; i += 1 ) {
+        if( valueType == 'item' ) { 
+          value = that.getItem(values[i]);
+          lens = view.getLens(value);
+          if( lens == null ) {
+            value = value.label[0];
+            /* we should escape this value so it's just text */
+            $(value).appendTo($(parentElmt));
+          }
+          else {
+            /* construct a clickable link that will pop up the lens content */
+            lensElmt = $("<div></div>");
+            lensRender = lens.render(view, model, values[i]);
+/* TODO: make id more universally unique */
+            $(lensRender).attr('id', 'facet-item-lens-' + values[i]);
+            $(lensRender).addClass('facets-overlay');
+            $("<a class='close ui-icon ui-icon-circle-close'></a>").prependTo($(lensRender));
+            $(lensRender).addClass('ui-corner-all');
+            trigger = $("<span rel='#facet-item-lens-'" + values[i] + "'>" + value.label[0] + "</span>")
+            trigger.appendTo(lensElmt);
+            $(lensRender).appendTo(lensElmt);
+            lensElmt.appendTo($(parentElmt));
+            $(lensRender).hide();
+            trigger.overlay();
+          }
+        }
+        else {
+          $("<span>" + values[i] + "</span>").appendTo($(parentElmt));
+        }
+
+        if( n > 1 ) {
+          if( i == n-2 ) {
+            if( n > 2 ) {
+              $(last_separator).appendTo($(parentElmt));
+            }
+            else {
+              $(pair_separator).appendTo($(parentElmt));
+            }
+          }
+          else if( i < n-1 ){
+            $(separator).appendTo($(parentElmt));
+          }
+        }
+      }
+    };
+
+    var createDOMFromTemplate = function(view, rootID, templateNode, result, parentElmt) {
       var node, elmt, tag, attribute, value, v, n, i, items;
 
       if(templateNode == null) {
@@ -199,12 +279,10 @@ Fabulator.namespace('Exhibit');
           }
           else if( attribute == "content" ) {
             if( value != null ) {
-              items = value.evaluateOneItem(rootID, that.dataSource);
-              if( items.values.size() > 1 ) {
+              items = value.evaluateOnItem(rootID, that.dataSource);
+              if( items.values.size() > 0 ) {
                 // we have a list of items
-              }
-              else if( items.values.size() == 1 ) {
-                elmt.innerText = (items.values.items())[0];
+                itemList(view, elmt, templateNode, items);
               }
             }
           }
@@ -219,7 +297,7 @@ Fabulator.namespace('Exhibit');
                     setting += e;
                   }
                   else {
-                    r = e.evaluateOneItem(rootID, that.dataSource);
+                    r = e.evaluateOnItem(rootID, that.dataSource);
                     setting += (r.values.items()).join("");
                   }
                 });
@@ -230,7 +308,7 @@ Fabulator.namespace('Exhibit');
           else if( attribute == "children" ) {
             if( value != null ) {
               for(i = 0, n = value.length; i < n; i++) {
-                createDOMFromTemplate(rootID, value[i], result, elmt);
+                createDOMFromTemplate(view, rootID, value[i], result, elmt);
               }
             }
           }
@@ -242,9 +320,9 @@ Fabulator.namespace('Exhibit');
       }
     };
 
-    that.renderTemplate = function(rootID, template) {
+    that.renderTemplate = function(view, rootID, template) {
       var result = {};
-      result.elmt = createDOMFromTemplate(rootID, template, result, null);
+      result.elmt = createDOMFromTemplate(view, rootID, template, result, null);
 
       return result;
     };

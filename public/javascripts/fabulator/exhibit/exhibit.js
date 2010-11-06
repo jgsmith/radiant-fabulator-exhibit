@@ -155,6 +155,7 @@ jQuery(document).ready(function($){
     var options = {
     };
 
-    Fabulator.Exhibit.ViewPanel('#' + $(el).attr('id'), options);
+    //Fabulator.Exhibit.ViewPanel('#' + $(el).attr('id'), options);
+    Fabulator.Exhibit.ViewPanel(el, options);
   });
 });

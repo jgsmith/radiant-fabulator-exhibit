@@ -156,158 +156,8 @@ Fabulator.namespace('Exhibit');
     return that;
   };
 
-  Exhibit.Facets.Base = function(type, container, options) {
+  Exhibit.Facets.initView = function(type, container, options) {
     var that = fluid.initView("Fabulator.Exhibit.Facets." + type, container, options);
-
-    var parseSetting = function(s, type, spec) {
-      var sType = typeof s, f, i, n, choices;
-
-      if(type == "text") {
-        return s;
-      }
-      else if( type == "float" ) {
-        if( sType == "number" ) {
-          return s;
-        }
-        else if( sType == "string" ) {
-          f = parseFloat(s);
-          if( !isNaN(f) ) {
-            return f;
-          }
-        }
-        throw new Error("Expected a floating point number but got " + s);
-      }
-      else if( type == "int" ) {
-        if( sType == "number" ) {
-          return Math.round(s);
-        }
-        else if( sType == "string" ) {
-          n = parseInt(s);
-          if( !isNaN(n) ) {
-            return n;
-          }
-        }
-        throw new Error("Expected an integer but got " + s);
-      }
-      else if(type == "boolean" ) {
-        if( sType == "boolean" ) {
-          return s;
-        }
-        else  if( sType == "string" ) {
-          s = s.toLowerCase();
-          if( s == "true" || s == "on" || s == "yes" ) {
-            return true;
-          }
-          else if( s == "false" || s == "off" || s == "no" ) {
-            return false;
-          }
-        }
-        throw new Error("Expected either 'true' or 'false' but got " + s);
-      }
-      else if( type == "function" ) {
-        if( sType == "function" ) {
-          return s;
-        }
-        else if( sType == "string" ) {
-          try {
-            f = eval(s);
-            if( typeof f == "function") {
-              return f;
-            }
-          }
-          catch(e) {
-            // silent
-          }
-        }
-        throw new Error("Expected a function or the name of a function but got " + s);
-      }
-      else if( type == "enum" ) {
-        choices = spec.choices;
-        for(i = 0, n = choices.length; i < n; i += 1 ) {
-          if(choices[i] == s) {
-            return s;
-          }
-        }
-        throw new Error("Expected one of " + choices.join(", ") + " but got " + s);
-      }
-      else if( type == "expression" ) {
-        return Exhibit.ExpressionParser().parse(s);
-      }
-      else {
-        throw new Error("Unknown setting type " + type);
-      }
-    };
-
-    that.collectSettingsFromDOM = function(specs) {
-      var field, spec, name, settings, type, value, dimensions,
-          separator, a, i, n;
-
-      that.options.facet = that.options.facet || { };
-
-      settings = that.options.facet;
-
-      for(field in specs) {
-        spec = specs[field];
-        name = field;
-        if( "name" in spec ) {
-          name = spec.name;
-        }
-        if( !(name in settings) && "defaultValue" in spec) {
-          settings[name] = spec.defaultValue;
-        }
-
-        value = $(container).attr("ex:" + field);
-        if( value == null ) {
-          continue;
-        }
-
-        if( typeof value == "string") {
-          value = value.trim();
-          if( value.length == 0 ) {
-            continue;
-          }
-        }
-
-        type = "text";
-        if( "type" in spec ) {
-          type = spec.type;
-        }
-
-        dimensions = 1;
-        if( "dimensions" in spec ) {
-          dimensions = spec.dimensions;
-        }
-
-        try {
-          if( dimensions > 1 || dimensions == '*') {
-            separator = ",";
-            if( "separator" in spec ) {
-              separator = spec.separator;
-            }
-
-            a = value.split(separator);
-            if( dimensions != '*' && a.length != dimensions ) {
-              throw new Error("Expected a tuple of " + dimensions + " dimensions separated with " + separator + " but got " + value);
-            }
-            else {
-              for(i = 0, n = a.length; i < n; i += 1 ) {
-                a[i] = parseSetting(a[i].trim(), type, spec);
-              }
-
-              settings[name] = a;
-            }
-          }
-          else {
-            settings[name] = parseSetting(value, type, spec);
-          }
-        }
-        catch(e) {
-          Exhibit.debug(e);
-        }
-      }
-
-      that.options.facet = settings;
-    };
 
     options = that.options;
 
@@ -317,14 +167,14 @@ Fabulator.namespace('Exhibit');
     options.viewPanel.registerFilter(that);
 
     if( "settingSpec" in options ) {
-      that.collectSettingsFromDOM(options.settingSpec);
+      that.options.facet = Exhibit.Util.collectSettingsFromDOM(container, options.settingSpec);
     }
     
     return that;
   };
 
   Exhibit.Facets.TextSearch = function(container, options) {
-    var that = Exhibit.Facets.Base("TextSearch", container, options),
+    var that = Exhibit.Facets.initView("TextSearch", container, options),
         dom, input_id;
     options = that.options;
 
@@ -342,7 +192,7 @@ Fabulator.namespace('Exhibit');
       if( that.text && that.options.facet.expression ) {
         values = [ ];
         $(that.options.facet.expression).each(function(idx, ex) {
-          var items = ex.evaluateOneItem(id, dataSource);
+          var items = ex.evaluateOnItem(id, dataSource);
           values = values.concat(items.values.items());
         });
         n = values.length;
@@ -366,7 +216,7 @@ Fabulator.namespace('Exhibit');
     $("<input type='text' id='" + input_id + "'>").appendTo($(dom.valuesContainer));
 
     $("#" + input_id).keyup(function() {
-      that.text = $("#" + input_id).val().toLowerCase().trim();
+      that.text = $.trim($("#" + input_id).val().toLowerCase());
       that.events.onFilterChange.fire();
     });
 
@@ -374,7 +224,7 @@ Fabulator.namespace('Exhibit');
   };
 
   Exhibit.Facets.List = function(container, options) {
-    var that = Exhibit.Facets.Base("List", container, options),
+    var that = Exhibit.Facets.initView("List", container, options),
         valueSet = Exhibit.Set(),
         counts = { }, 
         entries = [ ], 
@@ -539,7 +389,7 @@ Fabulator.namespace('Exhibit');
 //    that.eventModelChange(that.viewPanel.dataView);
 
     that.eventFilterItem = function(dataSource, id) {
-      var values = options.facet.expression.evaluateOneItem(id, dataSource),
+      var values = options.facet.expression.evaluateOnItem(id, dataSource),
           i, n;
 
 

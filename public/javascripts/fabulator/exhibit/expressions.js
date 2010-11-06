@@ -110,7 +110,7 @@
       };
     };
 
-    that.evaluateOneItem = function( itemID, database ) {
+    that.evaluateOnItem = function( itemID, database ) {
       return this.evaluate(
         { "value" : itemID },
         { "value" : "item" },
