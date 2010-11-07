@@ -113,4 +113,15 @@
   position: absolute;
   right: 40%;
   top: 40%;
+  background: rgb(255,255,253);
+  background: rgba(255,255,253, 0.95);
+  
+  border: 1px solid #cccccc;
+  padding: 5px;
+}
+
+.exhibit-lens-title {
+  background-color: #eeeeee;
+  font-weight: bold;
+  font-size: 110%;
 }

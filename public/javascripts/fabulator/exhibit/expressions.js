@@ -190,7 +190,7 @@
   };
 
   Exhibit.Expression.Collection = function(values, valueType) {
-    var that = { };
+    var that = { valueType: valueType };
 
     if( values instanceof Array ) {
 

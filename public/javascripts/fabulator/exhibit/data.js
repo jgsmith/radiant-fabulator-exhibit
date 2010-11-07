@@ -37,8 +37,11 @@ Fabulator.namespace('Exhibit');
 
   var sources = { };
 
+  var data_view_counter = 1;
+
   Exhibit.DataView = function(options) {
     var that = { },
+        progress,
         set = Exhibit.Set();
     that.options = options;
 
@@ -53,12 +56,25 @@ Fabulator.namespace('Exhibit');
       ob.events.onFilterChange.addListener(that.eventFilterChange);
     };
 
+    $("<div id='data-source-progress-" + data_view_counter + "'>" +
+      "<div class='flc-progress progress-pop-up exhibit-progress-pop-up ui-corner-all'><h3>Filtering...</h3>" +
+      "<div class='flc-progress-indicator progress-indicator'></div>" +
+      "<p class='flc-progress-label progress-label'>0% Complete</p>" +
+      "</div></div>").appendTo($("html > body"));
+
+    progress = fluid.progress("#data-source-progress-" + data_view_counter);
+
+    progress.hide();
+
+    data_view_counter += 1;
+
+
     that.items = set.items;
 
     that.size = set.size;
 
-    that.filterItems = function() {
-      var id, fres, ids;
+    that.filterItems = function(endFn) {
+      var id, fres, ids, percent, old_percent, n, chunk_size, f;
 
       set = Exhibit.Set();
 
@@ -68,30 +84,68 @@ Fabulator.namespace('Exhibit');
 
       ids = that.dataSource.items();
 
-      $(ids).each(function(idx, id) {
-        /* do filtering here */
-        // id = ids[id];
-        fres = that.events.onFilterItem.fire(that.dataSource, id);
-        if(fres !== false) {
-          set.add(id);
+      old_percent = 0;
+      n = ids.length;
+
+      if(n > 100) {
+        progress.show();
+      }
+
+      chunk_size = parseInt(n / 100);
+
+      if(chunk_size > 200) {
+        chunk_size = 200;
+      }
+
+      f = function(start) {
+        var i, end;
+        end = start + chunk_size;
+        if( end > n ) {
+          end = n;
         }
-      });
+        for(i = start; i < end; i += 1) {
+          id = ids[i];
+          fres = that.events.onFilterItem.fire(that.dataSource, id);
+          if(fres !== false) {
+            set.add(id);
+          }
+        }
+        if(n > 100 ) {
+          percent = parseInt(end * 100 / n);
+          if( percent > old_percent ) {
+            progress.update(percent, percent + "% Complete");
+          }
+        }
+        if(end < n) {
+          setTimeout(function() {
+            f(end);
+          }, 0);
+        }    
+        else {
+          if(n > 100 ) {
+            progress.update(100, "100% Complete");
+            progress.hide();
+          }
+          if(endFn) { setTimeout(endFn, 0); }
+        }
+      };     
+      f(0);
     };
 
     that.eventModelChange = function(model) {
       var id;
 
-      that.filterItems();
-
-      that.events.onModelChange.fire(that);
+      that.filterItems(function() {
+        that.events.onModelChange.fire(that);
+      });
     };
 
     that.eventFilterChange = function() {
       var id;
 
-      that.filterItems();
-
-      that.events.onModelChange.fire(that);
+      that.filterItems(function() {
+        that.events.onModelChange.fire(that);
+      });
     };
 
     that.getItem = function(id) {
@@ -108,9 +162,31 @@ Fabulator.namespace('Exhibit');
       var separator = ", ",
           last_separator = ", and ",
           pair_separator = " and ",
-          values, value, lens,
+          values, value, lens, popupFn,
           valueType, lensElmt, lensRender,
           i, n;
+
+      popupFn = function(container, trigger, lens, itemID) {
+        var lensRender;
+   
+        trigger.bind("click", function() {
+          var t, id;
+
+          if( !lensRender ) {
+            lensRender = lens.render(view, view.options.viewPanel.dataView, itemID);
+            /* TODO: make id more universally unique */
+            id = itemID;
+            id = id.replace('.', '-');
+            $(lensRender).attr('id', 'facet-item-lens-' + id);
+            $(lensRender).addClass('facets-overlay');
+            $("<a class='close ui-icon ui-icon-circle-close'></a>").prependTo($(lensRender));
+            $(lensRender).addClass('ui-corner-all');
+            $(lensRender).appendTo($(container));
+            $(trigger).attr('rel', '#facet-item-lens-' + id);
+            $(trigger).overlay({ load: true });
+          }
+        });  
+      };
 
       if( "separator" in templateNode ) {
         separator = templateNode.separator;
@@ -150,18 +226,10 @@ Fabulator.namespace('Exhibit');
           else {
             /* construct a clickable link that will pop up the lens content */
             lensElmt = $("<div></div>");
-            lensRender = lens.render(view, model, values[i]);
-/* TODO: make id more universally unique */
-            $(lensRender).attr('id', 'facet-item-lens-' + values[i]);
-            $(lensRender).addClass('facets-overlay');
-            $("<a class='close ui-icon ui-icon-circle-close'></a>").prependTo($(lensRender));
-            $(lensRender).addClass('ui-corner-all');
-            trigger = $("<span rel='#facet-item-lens-'" + values[i] + "'>" + value.label[0] + "</span>")
-            trigger.appendTo(lensElmt);
-            $(lensRender).appendTo(lensElmt);
             lensElmt.appendTo($(parentElmt));
-            $(lensRender).hide();
-            trigger.overlay();
+            trigger = $("<span rel='#facet-item-lens-" + values[i] + "'>" + value.label[0] + "</span>")
+            trigger.appendTo(lensElmt);
+            popupFn(lensElmt, trigger, lens, values[i]);
           }
         }
         else {
@@ -416,7 +484,7 @@ Fabulator.namespace('Exhibit');
     that.name = p;
 
     that.getValueType = function() {
-      that.valueType;
+      return that.valueType;
     };
 
     return that;
@@ -509,19 +577,17 @@ Fabulator.namespace('Exhibit');
         baseURI = location.href;
       }
 
-      if("types" in data) {
-        that.loadTypes(data.types, baseURI);
-      }
+      data.types = data.types || { };
+      data.properties = data.properties || { };
+      data.items = data.items || [ ];
 
-      if("properties" in data) {
-        that.loadProperties(data.properties, baseURI);
-      }
-
-      if("items" in data) {
-        that.loadItems(data.items, baseURI);
-      }
-
-      that.events.onModelChange.fire(that);
+      that.loadTypes(data.types, baseURI, function() {
+        that.loadProperties(data.properties, baseURI, function() {
+          that.loadItems(data.items, baseURI, function() {
+            that.events.onModelChange.fire(that);
+          });
+        });
+      });
     };
 
     var canonicalBaseURI = function(baseURI) {
@@ -535,7 +601,7 @@ Fabulator.namespace('Exhibit');
       return baseURI;
     };
 
-    that.loadTypes = function(types, baseURI) {
+    that.loadTypes = function(types, baseURI, fn) {
       var typeID, typeEntry, type, p;
 
       that.events.onBeforeLoadingTypes.fire(that);
@@ -570,9 +636,11 @@ Fabulator.namespace('Exhibit');
       catch(e) {
         Exhibit.debug("loadTypes failed:", e);
       }
+
+      setTimeout(fn, 0);
     };
 
-    that.loadProperties = function(properties, baseURI) {
+    that.loadProperties = function(properties, baseURI, fn) {
       var propertyID, propertyEntry, property;
 
       that.events.onBeforeLoadingProperties.fire(that);
@@ -612,10 +680,11 @@ Fabulator.namespace('Exhibit');
       catch(e) {
         Exhibit.debug("loadProperties failed: ", e);
       }
+      setTimeout(fn, 0);
     };
 
-    that.loadItems = function(items, baseURI) {
-      var spo, ops, indexTriple, i, entry, n, progress, percent, old_percent;
+    that.loadItems = function(items, baseURI, fn) {
+      var spo, ops, indexTriple, entry, n, progress, percent, old_percent, f;
 
       var indexPut = function(index, x, y, z) {
         var hash = index[x],
@@ -643,7 +712,7 @@ Fabulator.namespace('Exhibit');
 
       that.events.onBeforeLoadingItems.fire(that);
        $("<div id='progress-items-" + options.source + "'>" +
-         "<div class='flc-progress progress-pop-up exhibit-progress-pop-up'><h3>Loading " + items.length + " Item" + (items.length == 1 ? "" : "s") + "</h3>" +
+         "<div class='flc-progress progress-pop-up exhibit-progress-pop-up ui-corner-all'><h3>Loading " + items.length + " Item" + (items.length == 1 ? "" : "s") + "</h3>" +
           "<div class='flc-progress-bar progress-bar'>" +
             "<div class='flc-progress-indicator progress-indicator'></div>" +
           "</div>" +
@@ -662,24 +731,54 @@ Fabulator.namespace('Exhibit');
           indexPut(that.ops, o, p, s);
         };
 
-        for(i = 0, n = items.length; i < n; i++) {
-          percent = (i * 100 / n);
+        n = items.length;
+        chunk_size = parseInt( n / 100 );
+        if(chunk_size > 200) {
+          chunk_size = 200;
+        }
+
+        f = function(start) {
+          var end, i;
+
+          end = start + chunk_size;
+          if( end > n ) { end = n; }
+
+          try {
+            for(i = start; i < end; i += 1 ) {
+              entry = items[i];
+              if( typeof(entry) == "object" ) {
+                that.loadItem(entry, indexTriple, baseURI);
+              }
+            }
+          }
+          catch(e) {
+            Exhibit.debug("loadItems failed: ", e);
+          }
+
+          percent = parseInt(i * 100 / n);
           if( percent > old_percent ) {
             old_percent = percent;
             progress.update(percent, percent + "% Complete");
           }
-          entry = items[i];
-          if( typeof(entry) == "object" ) {
-            that.loadItem(entry, indexTriple, baseURI);
+          if( end < n ) {
+            setTimeout(function() {
+              f(end);
+            }, 0);
+          }
+          else {
+            progress.update(100, "100% Complete");
+            progress.hide();
+            setTimeout(function() {
+              that.events.onAfterLoadingItems.fire(that);
+              setTimeout(fn, 0);
+            }, 0);
           }
         }
-        that.events.onAfterLoadingItems.fire(that);
+        f(0);
       }
       catch(e) {
         Exhibit.debug("loadItems failed: ", e);
       }
-      progress.update(100, "100% Complete");
-      progress.hide();
     };
 
     that.loadItem = function(item, indexFn, baseURI) {

@@ -53,6 +53,9 @@ Fabulator.namespace('Exhibit');
   var initDataView = function(that) {
     that.dataView = Exhibit.DataView({ source: that.options.source });
     that.dataView.events.onModelChange.addListener(that.eventModelChange);
+    if( "collection" in that ) {
+      that.dataView.events.onFilterItem.addListener( function(s,i) { return that.collection(s,i); } );
+    }
     that.registerFilter = function(filter) {
       that.dataView.registerFilter(filter);
     };
@@ -69,6 +72,74 @@ Fabulator.namespace('Exhibit');
     $(that.container).find('.facets').each(function(idx, el) {
       $(el).attr('id', myid+'-facets-' + idx);
       that.facets = Exhibit.Facets(el, { viewPanel: that, trigger: '#' + myid + '-open-facets' });
+    });
+  };
+
+  var initCollections = function(that) {
+    that.collections = { };
+
+    $(that.container).children().each(function(idx, el) {
+      var id, filterFn, priorFilterFn, n;
+
+      if( $(el).attr('ex:role') == "exhibit-collection" ) {
+        id = $(el).attr('id');
+        types = $(el).attr('ex:itemTypes');
+        if(types) {
+          types = types.split(/,\s*/);
+
+          n = types.length;
+
+          filterFn = function(dataSource, itemID) {
+            var i, j, m, item = dataSource.getItem(itemID);
+            if( typeof(item.type) == "undefined" ) {
+              item.type = "Item";
+            }
+            if(typeof(item.type) == "string") {
+              for(i = 0; i < n; i += 1 ) {
+                if( item.type == types[i] ) {
+                  return;
+                }
+              }
+            }
+            else {
+              m = item.type.length;
+              for( i = 0; i < n; i += 1 ) {
+                for( j = 0; j < m; j += 1 ) {
+                  if( item.type[j] == types[i] ) {
+                    return;
+                  }
+                }
+              }
+            }
+            return false;
+          };
+
+          if( id != null && id != "" ) {
+            if( id in that.collections ) {
+              priorFilterFn = that.collections[id];
+              that.collections[id] = function(dataSource, itemID) {
+                if( filterFn(dataSource, itemID) !== false ) { return; }
+                return priorFilterFn(dataSource, itemID);
+              };
+            }
+            else {
+              that.collections[id] = filterFn;
+            }
+          }
+          else {
+            if( "collection" in that ) {
+              priorFilterFn = that.collection;
+              that.collection = function(dataSource, itemID) {
+                if( filterFn(dataSource, itemID) !== false ) { return; }
+                return priorFilterFn(dataSource, itemID);
+              };
+            }
+            else {
+              that.collection = filterFn;
+            }
+          }
+        }
+      }
     });
   };
 
@@ -124,6 +195,8 @@ Fabulator.namespace('Exhibit');
       }
     }
 
+    initCollections(that);
+
     initDataView(that);
 
     initPresentationViews(that);
@@ -131,7 +204,6 @@ Fabulator.namespace('Exhibit');
     initFacetView(that, myid);
 
     that.dataView.dataSource.fetchData();
-
 
     return that;
   };

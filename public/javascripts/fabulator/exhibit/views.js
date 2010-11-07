@@ -251,15 +251,23 @@
 */
 
     that.eventModelChange = function(model) {
-      var template, cutpoints, tree, lens, i, n, item;
+      var template, cutpoints, tree, lens, i, n, item, start, end, items;
 
       $(body_container).empty();
-      $(model.items()).each(function(idx, id) {
-        item = model.getItem(id);
+
+      items = model.items();
+      n = items.length;
+      start = 0;
+      end = 20;
+      if( end > n ) {
+        end = n;
+      }
+      for( i = start; i < end; i += 1 ) {
+        item = model.getItem(items[i]);
         lens = that.getLens(item);
 
-        $(lens.render(that, model, id)).appendTo($(body_container));
-      });
+        $(lens.render(that, model, items[i])).appendTo($(body_container));
+      };
 
       $("<div class='clear'></div>").appendTo($(body_container));
     };
