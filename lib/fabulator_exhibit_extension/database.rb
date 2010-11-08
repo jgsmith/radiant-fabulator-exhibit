@@ -2,33 +2,50 @@ class FabulatorExhibitExtension
   class Database
     def initialize(db)
       @db = db
+      @info = {
+        :items => ItemCollection.new(@db),
+        :properties => PropertyCollection.new(@db),
+        :types => TypeCollection.new(@db)
+      }
     end
 
     def to_json
-      '{ "items":' + self[:items].to_json + ', ' +
-      '  "types":' + self[:types].to_json + ', ' +
-      '  "properties":' + self[:properties].to_json +
+      '{ "items":' + @info[:items].to_json + ', ' +
+      '  "types":' + @info[:types].to_json + ', ' +
+      '  "properties":' + @info[:properties].to_json +
       '}'
     end
 
     def [](t)
-      case t.to_sym
-        when :items
-          return ItemCollection.new(@db)
-        when :properties
-          return PropertyCollection.new(@db)
-        when :types
-          return TypeCollection.new(@db)
-      end
+      @info[t.to_sym]
     end
   end
 
   class ItemCollection
     def initialize(db)
       @db = db
+      @items = { }
+    end
+
+    def delete_if(&block)
+      self.each do |i|
+        r = yield i['id'], i
+        if r
+          @items.delete(i['id'])
+          i.delete
+        end
+      end
+    end
+
+    def each(&block)
+      @db.fabulator_exhibit_items.find(:all).each do |i|
+        @items[i.id.to_s] ||= Item.new(i)
+        yield @items[i.id.to_s]
+      end
     end
 
     def [](nom)
+      return @items[nom] if @items.include?(nom)
       ob = nil
       begin
         ob = @db.fabulator_exhibit_items.find(:first, [ 'uuid = ?', nom ])
@@ -41,13 +58,13 @@ class FabulatorExhibitExtension
           :fabulator_exhibit_id => @db.id
         })
       end
-      Item.new(ob)
+      @items[nom] = Item.new(ob)
     end
 
     def include?(nom)
       ob = nil
       begin
-        ob = @db.fabulator_exhibit_items.find(:first, [ 'uuid = ?', nom ])
+        ob = @db.fabulator_exhibit_items.find(:first, :conditions => [ 'uuid = ?', nom ])
       rescue
         ob = nil
       end
@@ -72,12 +89,14 @@ class FabulatorExhibitExtension
   class PropertyCollection
     def initialize(db)
       @db = db
+      @properties = { }
     end
 
     def [](nom)
+      return @properties[nom] if @properties.include?(nom)
       ob = nil
       begin
-        ob = @db.fabulator_exhibit_properties.find(:first, [ 'name = ?', nom ])
+        ob = @db.fabulator_exhibit_properties.find(:first, :conditions => [ 'name = ?', nom ])
       rescue
         ob = nil
       end
@@ -87,7 +106,7 @@ class FabulatorExhibitExtension
           :fabulator_exhibit_id => @db.id
         })
       end
-      Property.new(ob)
+      @properties[nom] ||= Property.new(ob)
     end
 
     def []=(nom, hash)
@@ -110,12 +129,14 @@ class FabulatorExhibitExtension
   class TypeCollection
     def initialize(db)
       @db = db
+      @types = { }
     end
 
     def [](nom)
+      return @types[nom] if @types.include?(nom)
       ob = nil
       begin
-        ob = @db.fabulator_exhibit_types.find(:first, [ 'name = ?', nom ])
+        ob = @db.fabulator_exhibit_types.find(:first, :conditions => [ 'name = ?', nom ])
       rescue
         ob = nil
       end
@@ -125,7 +146,7 @@ class FabulatorExhibitExtension
           :fabulator_exhibit_id => @db.id
         })
       end
-      Type.new(ob)
+      @types[nom] ||= Type.new(ob)
     end
 
     def []=(nom, hash)
@@ -149,6 +170,10 @@ class FabulatorExhibitExtension
     def initialize(i)
       @item = i
       @raw_data = ( JSON.parse(i.data) rescue {} )
+    end
+
+    def delete
+      @item.delete
     end
 
     def [](k)
