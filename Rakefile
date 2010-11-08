@@ -8,7 +8,7 @@ begin
     gem.homepage = "http://github.com/jgsmith/radiant-fabulator-exhibit"
     gem.authors = ["James Smith"]
     gem.add_dependency('radiant-fabulator-extension', '>= 0.0.7')
-    gem.add_dependency('fabulator-exhibit', '>= 0.0.6')
+    gem.add_dependency('fabulator-exhibit', '>= 0.0.7')
     gem.add_dependency('json', '>= 1.4.3')
     gem.add_dependency('uuid', '>= 2.3.1')
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
