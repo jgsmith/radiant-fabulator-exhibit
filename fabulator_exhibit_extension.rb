@@ -11,6 +11,9 @@ class FabulatorExhibitExtension < Radiant::Extension
   extension_config do |config|
     config.gem 'radiant-fabulator-extension'
     config.gem 'fabulator-exhibit'
+    config.after_initialize do
+      require 'fabulator_exhibit_extension/archive'
+    end
   end
 
   def activate

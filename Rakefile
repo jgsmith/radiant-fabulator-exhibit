@@ -22,30 +22,30 @@ end
 # it if it is.  If not, use the gem version.
 
 # Determine where the RSpec plugin is by loading the boot
-unless defined? RADIANT_ROOT
-  ENV["RAILS_ENV"] = "test"
-  case
-  when ENV["RADIANT_ENV_FILE"]
-    require File.dirname(ENV["RADIANT_ENV_FILE"]) + "/boot"
-  when File.dirname(__FILE__) =~ %r{vendor/radiant/vendor/extensions}
-    require "#{File.expand_path(File.dirname(__FILE__) + "/../../../../../")}/config/boot"
-  else
-    require "#{File.expand_path(File.dirname(__FILE__) + "/../../../")}/config/boot"
-  end
-end
+#unless defined? RADIANT_ROOT
+#  ENV["RAILS_ENV"] = "test"
+#  case
+#  when ENV["RADIANT_ENV_FILE"]
+#    require File.dirname(ENV["RADIANT_ENV_FILE"]) + "/boot"
+#  when File.dirname(__FILE__) =~ %r{vendor/radiant/vendor/extensions}
+#    require "#{File.expand_path(File.dirname(__FILE__) + "/../../../../../")}/config/boot"
+#  else
+#    require "#{File.expand_path(File.dirname(__FILE__) + "/../../../")}/config/boot"
+#  end
+#end
 
 require 'rake'
 require 'rake/rdoctask'
 require 'rake/testtask'
 
-rspec_base = File.expand_path(RADIANT_ROOT + '/vendor/plugins/rspec/lib')
-$LOAD_PATH.unshift(rspec_base) if File.exist?(rspec_base)
+#rspec_base = File.expand_path(RADIANT_ROOT + '/vendor/plugins/rspec/lib')
+#$LOAD_PATH.unshift(rspec_base) if File.exist?(rspec_base)
 require 'spec/rake/spectask'
 require 'cucumber'
 require 'cucumber/rake/task'
 
 # Cleanup the RADIANT_ROOT constant so specs will load the environment
-Object.send(:remove_const, :RADIANT_ROOT)
+#Object.send(:remove_const, :RADIANT_ROOT)
 
 extension_root = File.expand_path(File.dirname(__FILE__))
 
