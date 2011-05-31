@@ -26,7 +26,7 @@
                   %span= exhibit.items_count
               - tbody.modify_cell do
                 %td.remove
-                  = link_to image('remove', :alt => 'Remove Exhibit Database'), remove_admin_fabulator_exhibit_url(exhibit)
+                  = link_to t('remove'), remove_admin_fabulator_exhibit_url(exhibit)
       - else
         %tr
           %td.note{:colspan => admin.fabulator_exhibit.index.tbody.length} No Exhibit Databases
