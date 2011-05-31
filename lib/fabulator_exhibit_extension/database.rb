@@ -161,7 +161,8 @@ class FabulatorExhibitExtension
     
     def each_pair(&block)
       @db.fabulator_exhibit_properties.find(:all).each do |p|
-        yield p['name'], p
+        pi = Property.new(p)
+        yield pi['name'], pi
       end
     end
 
