@@ -48,8 +48,7 @@ class FabulatorExhibitExtension
       ret = [ ]
       @db.fabulator_exhibit_items.find(:all).each do |i|
         @items[i.id.to_s] ||= Item.new(i)
-        x = yield @items[i.id.to_s]
-        ret << x
+        ret << yield @items[i.id.to_s]
       end
       ret
     end
@@ -97,15 +96,14 @@ class FabulatorExhibitExtension
         next unless info['select']
         props[prop] = p.parse(ctx, info['select'])
       end
+      items = []
       if props.empty?
-        '[' +
-        self.collect{ |i| 
-          i.data
-        }.join(", ") +
-        ']'
+        self.each do |i| 
+          items << i.data
+        end
       else
-        '[' +
-        self.collect{ |i|
+        items = []
+        self.each do |i|
           n = i.to_node
           props.each_pair do |prop, select|
             ctx.with_root(n).evaluate(select).each do |v|
@@ -122,10 +120,10 @@ class FabulatorExhibitExtension
             end
           end
           h['id'] = n.name
-          h.to_json
-        }.join(", ") +
-        ']'
+          items << h.to_json
+        end
       end
+      '[' + items.join(", ") + ']'
     end
   end
 
