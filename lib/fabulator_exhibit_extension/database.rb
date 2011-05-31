@@ -95,7 +95,7 @@ class FabulatorExhibitExtension
       ctx = Fabulator::Expr::Context.new
       PropertyCollection.new(@db).each_pair do |prop, info|
         next unless info['select']
-        props[prop] = p.parse(ctx, info['select'])
+        props[prop] = p.parse(info['select'], ctx)
       end
       items = []
       if props.empty?
