@@ -46,9 +46,12 @@ class FabulatorExhibitExtension
     
     def collect(&block)
       ret = [ ]
-      self.each do |i|
-        ret << yield i
+      @db.fabulator_exhibit_items.find(:all).each do |i|
+        @items[i.id.to_s] ||= Item.new(i)
+        x = yield @items[i.id.to_s]
+        ret << x
       end
+      ret
     end
 
     def [](nom)
