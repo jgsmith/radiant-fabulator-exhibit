@@ -122,6 +122,7 @@ class FabulatorExhibitExtension
           h.to_json
         }.join(", ") +
         ']'
+      end
     end
   end
 
