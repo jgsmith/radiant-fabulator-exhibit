@@ -99,8 +99,8 @@ class FabulatorExhibitExtension
       end
       items = []
       if props.empty?
-        self.each do |i| 
-          items << i.data
+        @db.fabulator_exhibit_items.find(:all).each do |i|
+            items << i.data
         end
       else
         items = []
