@@ -32,7 +32,7 @@ class FabulatorExhibitExtension
         :fabulator_exhibit_id => :exhibit_id
       }
       
-      data :properties, FabulatorExhibitProperties, {
+      data :properties, FabulatorExhibitProperty, {
         :fabulator_exhibit_id => :exhibit_id
       }
     end
