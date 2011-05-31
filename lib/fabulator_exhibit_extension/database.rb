@@ -246,7 +246,7 @@ class FabulatorExhibitExtension
     end
     
     def to_node(ctx)
-      n = ctx.root.anon_node
+      n = ctx.root.anon_node(nil)
       n.name = @raw_data['id']
       @raw_data.each_pair do |k,v|
         v = [ v ] unless v.is_a?(Array)
