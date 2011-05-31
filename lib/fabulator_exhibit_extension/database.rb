@@ -48,7 +48,8 @@ class FabulatorExhibitExtension
       ret = [ ]
       @db.fabulator_exhibit_items.find(:all).each do |i|
         @items[i.id.to_s] ||= Item.new(i)
-        ret << yield @items[i.id.to_s]
+        x = yield @items[i.id.to_s]
+        ret << x
       end
       ret
     end
