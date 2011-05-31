@@ -105,7 +105,7 @@ class FabulatorExhibitExtension
       else
         items = []
         self.each do |i|
-          n = i.to_node
+          n = i.to_node(ctx)
           props.each_pair do |prop, select|
             ctx.with_root(n).evaluate(select).each do |v|
               n.create_child(prop, v)
