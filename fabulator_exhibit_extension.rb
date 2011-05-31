@@ -1,6 +1,8 @@
 require 'fabulator/exhibit'
 require 'json'
 
+require_dependency "#{File.expand_path(File.dirname(__FILE__))}/app/models/fabulator_exhibit"
+
 class FabulatorExhibitExtension < Radiant::Extension
   version "0.0.6"
   description "Exhibit extension to the Fabulator extension"
