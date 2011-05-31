@@ -43,6 +43,13 @@ class FabulatorExhibitExtension
         yield @items[i.id.to_s]
       end
     end
+    
+    def collect(&block)
+      ret = [ ]
+      self.each do |i|
+        ret << yield i
+      end
+    end
 
     def [](nom)
       return @items[nom] if @items.include?(nom)
@@ -80,9 +87,41 @@ class FabulatorExhibitExtension
     end
 
     def to_json
-      '[' +
-      @db.fabulator_exhibit_items.find(:all).collect{ |i| i.data }.join(", ") +
-      ']'
+      props = { }
+      p = Fabulator::Expr::Parser.new
+      ctx = Fabulator::Expr::Context.new
+      PropertyCollection.new(@db).each_pair do |prop, info|
+        next unless info['select']
+        props[prop] = p.parse(ctx, info['select'])
+      end
+      if props.empty?
+        '[' +
+        self.collect{ |i| 
+          i.data
+        }.join(", ") +
+        ']'
+      else
+        '[' +
+        self.collect{ |i|
+          n = i.to_node
+          props.each_pair do |prop, select|
+            ctx.with_root(n).evaluate(select).each do |v|
+              n.create_child(prop, v)
+            end
+          end
+          h = { }
+          n.children.each do |c|
+            if h.has_key?(c.name)
+              h[c.name] = [ h[c.name] ] unless h[c.name].is_a?(Array)
+              h[c.name] << c.value
+            else
+              h[c.name] = c.value
+            end
+          end
+          h['id'] = n.name
+          h.to_json
+        }.join(", ") +
+        ']'
     end
   end
 
@@ -194,6 +233,18 @@ class FabulatorExhibitExtension
       @raw_data.each_pair do |k,v|
         yield k,v
       end
+    end
+    
+    def to_node(ctx)
+      n = ctx.root.anon_node
+      n.name = @raw_data['id']
+      @raw_data.each_pair do |k,v|
+        v = [ v ] unless v.is_a?(Array)
+        v.each do |vv|
+          n.create_child(k, vv)
+        end
+      end
+      n
     end
 
     def merge!(hash)

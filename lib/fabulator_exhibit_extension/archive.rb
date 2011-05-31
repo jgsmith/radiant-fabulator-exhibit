@@ -22,17 +22,19 @@ class FabulatorExhibitExtension
     end
     
     reading do
-      data :exhibits do |io|
-      end
+      data :exhibits, FabulatorExhibit
       
-      data :items do
-      end
+      data :items, FabulatorExhibitItem, {
+        :fabulator_exhibit_id => :exhibit_id
+      }
       
-      data :types do
-      end
+      data :types, FabulatorExhibitType, {
+        :fabulator_exhibit_id => :exhibit_id
+      }
       
-      data :properties do
-      end
+      data :properties, FabulatorExhibitProperties, {
+        :fabulator_exhibit_id => :exhibit_id
+      }
     end
   end
 end
