@@ -159,6 +159,12 @@ class FabulatorExhibitExtension
       end
       ob.save
     end
+    
+    def each_pair(&block)
+      @db.fabulator_exhibit_properties.find(:all).each do |p|
+        yield p['name'], p
+      end
+    end
 
     def to_json
       '{' +
