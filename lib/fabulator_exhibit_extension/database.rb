@@ -38,7 +38,7 @@ class FabulatorExhibitExtension
     end
 
     def each(&block)
-      @db.fabulator_exhibit_items.find(:all).each do |i|
+      @db.fabulator_exhibit_items.each do |i|
         @items[i.id.to_s] ||= Item.new(i)
         yield @items[i.id.to_s]
       end
@@ -46,7 +46,7 @@ class FabulatorExhibitExtension
     
     def collect(&block)
       ret = [ ]
-      @db.fabulator_exhibit_items.find(:all).each do |i|
+      @db.fabulator_exhibit_items.each do |i|
         @items[i.id.to_s] ||= Item.new(i)
         x = yield @items[i.id.to_s]
         ret << x
@@ -160,7 +160,7 @@ class FabulatorExhibitExtension
     end
     
     def each_pair(&block)
-      @db.fabulator_exhibit_properties.find(:all).each do |p|
+      @db.fabulator_exhibit_properties.each do |p|
         pi = Property.new(p)
         yield pi['name'], pi
       end
@@ -168,7 +168,7 @@ class FabulatorExhibitExtension
 
     def to_json
       '{' +
-      @db.fabulator_exhibit_properties.find(:all).collect{ |p|
+      @db.fabulator_exhibit_properties.collect{ |p|
         p.name.to_json + ":" + p.data
       }.join(", ") +
       '}'
@@ -208,7 +208,7 @@ class FabulatorExhibitExtension
 
     def to_json
       '{' +
-      @db.fabulator_exhibit_types.find(:all).collect{ |t|
+      @db.fabulator_exhibit_types.collect{ |t|
         t.name.to_json + ":" + t.data
       }.join(", ") +
       '}'
