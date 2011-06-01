@@ -93,9 +93,9 @@ class FabulatorExhibitExtension
       props = { }
       p = Fabulator::Expr::Parser.new
       ctx = Fabulator::Expr::Context.new
-      PropertyCollection.new(@db).each_pair do |prop, info|
+      PropertyCollection.new(@db).each do |info|
         next unless info['select']
-        props[prop] = p.parse(info['select'], ctx)
+        props[info['id']] = p.parse(info['select'], ctx)
       end
       items = []
       if props.empty?
@@ -162,8 +162,12 @@ class FabulatorExhibitExtension
     def each_pair(&block)
       @db.fabulator_exhibit_properties.each do |p|
         pi = Property.new(p)
-        yield pi['name'], pi
+        yield pi['id'], pi
       end
+    end
+    
+    def each(&block)
+      @db.fabulator_exhibit_properties.each &block
     end
 
     def to_json
