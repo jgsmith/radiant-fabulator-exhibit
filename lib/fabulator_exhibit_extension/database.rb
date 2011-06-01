@@ -95,7 +95,13 @@ class FabulatorExhibitExtension
       ctx = Fabulator::Expr::Context.new
       PropertyCollection.new(@db).each do |info|
         next unless info['select']
-        props[info['id']] = p.parse(info['select'], ctx)
+        c = ctx.merge(nil)
+        if info['namespaces']
+          info['namespaces'].each_pair do |p,n|
+            c.set_ns(p,n)
+          end
+        end
+        props[info['name']] = p.parse(info['select'], ctx)
       end
       items = []
       if props.empty?
@@ -167,7 +173,9 @@ class FabulatorExhibitExtension
     end
     
     def each(&block)
-      @db.fabulator_exhibit_properties.each &block
+      @db.fabulator_exhibit_properties.each do |p|
+        yield Property.new(p)
+      end
     end
 
     def to_json
