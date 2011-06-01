@@ -90,31 +90,49 @@ class FabulatorExhibitExtension
     end
 
     def to_json
-      props = { }
+      props = [ ]
       p = Fabulator::Expr::Parser.new
       ctx = Fabulator::Expr::Context.new
       PropertyCollection.new(@db).each do |info|
         next unless info['select']
         c = ctx.merge(nil)
-        if info['namespaces']
+        if !info['namespaces'].nil?
           info['namespaces'].each_pair do |pre,n|
             c.set_ns(pre,n)
           end
         end
-        props[info['name']] = p.parse(info['select'], ctx)
+        props << { :id => info['id'], :select => info['select'], :namespaces => info['namespaces'] }
       end
       items = []
       if props.empty?
-        @db.fabulator_exhibit_items.find(:all).each do |i|
+        @db.fabulator_exhibit_items.each do |i|
             items << i.data
         end
       else
         items = []
         self.each do |i|
           n = i.to_node(ctx)
-          props.each_pair do |prop, select|
-            ctx.with_root(n).eval_expression(select).each do |v|
-              n.create_child(prop, v)
+          h = { }
+          n.children.each do |c|
+            if h.has_key?(c.name)
+              h[c.name] = [ h[c.name] ] unless h[c.name].is_a?(Array)
+              h[c.name] << c.value
+            else
+              h[c.name] = c.value
+            end
+          end
+          props.each do |info|
+            c = ctx.with_root(n)
+            if !info[:namespaces].nil?
+              info[:namespaces].each_pair do |pre,ns|
+                c.set_ns(pre,ns)
+              end
+            end
+            h[info[:id]] = c.eval_expression(info[:select]).collect { |v| v.value }
+            if h[info[:id]].size == 1
+              h[info[:id]] = h[info[:id]].first
+            elsif h[info[:id]].empty?
+              h.delete(info[:id])
             end
           end
           h = { }
