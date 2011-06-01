@@ -135,15 +135,6 @@ class FabulatorExhibitExtension
               h.delete(info[:id])
             end
           end
-          h = { }
-          n.children.each do |c|
-            if h.has_key?(c.name)
-              h[c.name] = [ h[c.name] ] unless h[c.name].is_a?(Array)
-              h[c.name] << c.value
-            else
-              h[c.name] = c.value
-            end
-          end
           h['id'] = n.name
           items << h.to_json
         end
