@@ -97,8 +97,8 @@ class FabulatorExhibitExtension
         next unless info['select']
         c = ctx.merge(nil)
         if info['namespaces']
-          info['namespaces'].each_pair do |p,n|
-            c.set_ns(p,n)
+          info['namespaces'].each_pair do |pre,n|
+            c.set_ns(pre,n)
           end
         end
         props[info['name']] = p.parse(info['select'], ctx)
