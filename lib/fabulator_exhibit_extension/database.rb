@@ -36,6 +36,10 @@ class FabulatorExhibitExtension
         end
       end
     end
+    
+    def empty?
+      @db.fabulator_exhibit_items.empty?
+    end
 
     def each(&block)
       @db.fabulator_exhibit_items.each do |i|
